@@ -1,5 +1,6 @@
 # kaffee-ecken-bot
-Die Kaffee-Ecken Bilder aus dem Forum https://kaffee-netz.de ☕️
+[Telegram Bot](https://telegram.me/KaffeeEckenBot) to browse and subscribe photos from the german coffee forum https://kaffee-netz.de ☕️
+
 
 ### Show short manual info
 ```
