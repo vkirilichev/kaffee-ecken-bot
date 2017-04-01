@@ -3,6 +3,6 @@ python:
   - "3.4"
 cache: pip3
 install:
-  - pip3 install pip3 install lxml pymongo python-telegram-bot requests
+  - pip3 install lxml pymongo python-telegram-bot requests
 script:
   - python tests.py
