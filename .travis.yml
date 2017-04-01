@@ -1,8 +1,8 @@
 language: python
 python:
   - "3.4"
-cache: pip
+cache: pip3
 install:
-  - pip install -r requirements.txt
+  - pip3 install pip3 install lxml pymongo python-telegram-bot requests
 script:
   - python tests.py
