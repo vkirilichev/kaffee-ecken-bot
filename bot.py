@@ -24,7 +24,7 @@ forum = {
     "Espresso": "threads/ich-trinke-gerade-diesen-espresso.19308"
 }
 
-_db = MongoClient(host='mongo', port=27017).KaffeeEckenBot
+_db = MongoClient(host='db', port=27017).KaffeeEckenBot
 
 
 # Enable logging
@@ -238,11 +238,11 @@ def _getLastPosts(url, num, skip=0):
             # skip quoted posts
             if _direct_parent.attrib['class'] != u'quote':
                 post = {}
-                _parent = _direct_parent.getparent().getparent().getparent().getparent()
+                _parent = _direct_parent.getparent().getparent().getparent().getparent().getparent()
                 forum_post = _parent.xpath(".//a[contains(@class, 'postNumber')]")[0]
                 post['url'] = "{}/{}".format(DOMAIN, forum_post.attrib['href'])
 
-                img_url = img.attrib['data-url']
+                img_url = img.attrib['data-url'] if 'data-url' in img.attrib else img.attrib['src']
                 cached_img = _db.img.find_one({"url": img_url})
                 if cached_img:
                     post["img"] = cached_img["photo"]
@@ -250,7 +250,7 @@ def _getLastPosts(url, num, skip=0):
                 else:
                     r = requests.get(img_url)
                     if r.status_code == 200:
-                        filename = img_url.rsplit('/', 1)[-1]
+                        filename = img.attrib['alt']
                         if not os.path.exists(filename):
                             with open(filename, 'wb') as f:
                                 for chunk in r:
@@ -279,25 +279,25 @@ def main():
     dp = updater.dispatcher
 
     # Commands
-    dp.addHandler(CommandHandler("help", start))
-    dp.addHandler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", start))
+    dp.add_handler(CommandHandler("start", start))
 
      # Non-commands
-    dp.addHandler(RegexHandler(r"Subscribe", subscribe))
-    dp.addHandler(RegexHandler(r"Unsubscribe", unsubscribe))
+    dp.add_handler(RegexHandler(r"Subscribe", subscribe))
+    dp.add_handler(RegexHandler(r"Unsubscribe", unsubscribe))
 
-    dp.addHandler(RegexHandler(r"Kaffee-Ecken", kaffeeEcken))
-    dp.addHandler(RegexHandler(r"Kaffeekram", kaffeekram))
-    dp.addHandler(RegexHandler(r"Latte-Art", latteArt))
-    dp.addHandler(RegexHandler(r"Espresso", espresso))
+    dp.add_handler(RegexHandler(r"Kaffee-Ecken", kaffeeEcken))
+    dp.add_handler(RegexHandler(r"Kaffeekram", kaffeekram))
+    dp.add_handler(RegexHandler(r"Latte-Art", latteArt))
+    dp.add_handler(RegexHandler(r"Espresso", espresso))
 
-    dp.addHandler(RegexHandler(r"More Posts", morePosts))
-    dp.addHandler(RegexHandler(r"↩︎ Back", back))
+    dp.add_handler(RegexHandler(r"More Posts", morePosts))
+    dp.add_handler(RegexHandler(r"↩︎ Back", back))
 
-    dp.addHandler(RegexHandler(r'.*', unknown))
+    dp.add_handler(RegexHandler(r'.*', unknown))
 
     # Errors
-    dp.addErrorHandler(error)
+    dp.add_error_handler(error)
 
     # Subscriptions (once a hour)
     job_queue.put(Job(_sendNewsletter, 3600, repeat=True))
