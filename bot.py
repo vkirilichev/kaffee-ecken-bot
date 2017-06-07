@@ -237,20 +237,36 @@ def _getLastPosts(url, num, skip=0):
             _direct_parent = img.getparent()
             # skip quoted posts
             if _direct_parent.attrib['class'] != u'quote':
+                if _direct_parent.attrib['class'] == u'LbTrigger':
+                    img = _direct_parent
+                    _direct_parent = _direct_parent.getparent()
+                if _direct_parent.attrib['class'] == u'externalLink':
+                    _direct_parent = _direct_parent.getparent()
+                if _direct_parent.attrib['class'] == u'thumbnail':
+                    # ignore thumbnails
+                    continue
                 post = {}
                 _parent = _direct_parent.getparent().getparent().getparent().getparent().getparent()
+                print(img.attrib)
                 forum_post = _parent.xpath(".//a[contains(@class, 'postNumber')]")[0]
                 post['url'] = "{}/{}".format(DOMAIN, forum_post.attrib['href'])
 
-                img_url = img.attrib['data-url'] if 'data-url' in img.attrib else img.attrib['src']
+                if 'data-url' in img.attrib:
+                    img_url = img.attrib['data-url']
+                elif 'src' in img.attrib:
+                    img_url = img.attrib['src']
+                elif 'href' in img.attrib:
+                    img_url = img.attrib['href']
+                if not img_url.startswith('http'):
+                    img_url = 'http:' + img_url if img_url.startswith('//') else DOMAIN + '/' + img_url
                 cached_img = _db.img.find_one({"url": img_url})
                 if cached_img:
                     post["img"] = cached_img["photo"]
                     post["date"] = cached_img["date"]
                 else:
-                    r = requests.get(img_url)
+                    r = requests.get(img_url.split('[IMG]')[-1]) if '[IMG]' in img_url else requests.get(img_url)
                     if r.status_code == 200:
-                        filename = img.attrib['alt']
+                        filename = img_url[:-1].split('/')[-1] if img_url.endswith('/') else img_url.split('/')[-1]
                         if not os.path.exists(filename):
                             with open(filename, 'wb') as f:
                                 for chunk in r:
