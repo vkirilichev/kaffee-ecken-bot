@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
@@ -25,7 +26,7 @@ type post struct {
 }
 
 var (
-	TOKEN = os.Getenv("token")
+	TOKEN = os.Getenv("TOKEN")
 	URL   = "https://www.kaffee-netz.de"
 )
 
@@ -102,6 +103,9 @@ func SendPost(bot *tgbotapi.BotAPI, p post) {
 	bot.Send(textMsg)
 
 	for _, image := range p.Images {
+		if !strings.HasPrefix(image, URL) {
+			image = URL + "/" + image
+		}
 		data, _ := DownloadFile(image)
 		file := tgbotapi.FileBytes{Name: p.URL, Bytes: data}
 		msg := tgbotapi.NewPhotoUpload(chatId, file)
