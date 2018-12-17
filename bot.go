@@ -87,7 +87,7 @@ func HandleRequest() {
 
 	for _, post := range posts {
 		_ = enc.Encode(post)
-		if post.Timestamp+3600000*2 >= Now() {
+		if post.Timestamp+3600000 >= Now() {
 			SendPost(bot, *post)
 		}
 	}
@@ -129,7 +129,7 @@ func DownloadFile(url string) ([]byte, error) {
 }
 
 func Now() int64 {
-	return time.Now().UnixNano() / int64(time.Millisecond)
+	return time.Now().UnixNano()/int64(time.Millisecond) - 3600000 // Locale: Europe/Berlin
 }
 
 func main() {
