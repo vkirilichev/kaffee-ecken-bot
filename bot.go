@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/gocolly/colly"
 	"io"
 	"log"
@@ -13,8 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type post struct {
@@ -68,7 +67,7 @@ func HandleRequest() {
 				if images != nil {
 					p := &post{
 						URL:       URL + "/" + element.ChildAttr("a.hashPermalink", "href"),
-						Timestamp: int64(timestamp * 1000), // To milliseconds
+						Timestamp: int64(timestamp), // In seconds
 						Author:    element.Attr("data-author"),
 						Comment:   element.ChildText(".messageText"),
 						Images:    images,
@@ -88,7 +87,7 @@ func HandleRequest() {
 
 	for _, post := range posts {
 		_ = enc.Encode(post)
-		if post.Timestamp+3600000 >= Now() {
+		if post.Timestamp+3600 >= time.Now().Unix() {
 			SendPost(bot, *post)
 		}
 	}
@@ -130,10 +129,6 @@ func DownloadFile(url string) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
-}
-
-func Now() int64 {
-	return time.Now().UnixNano()/int64(time.Millisecond) - 3600000 // Locale: Europe/Berlin
 }
 
 func main() {
